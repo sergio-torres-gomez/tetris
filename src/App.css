@@ -1,0 +1,18 @@
+#tablero .fila{
+    display: flex;
+    flex-direction: row;
+    gap: 1px;
+}
+#tablero span{
+    width: 20px;
+    height: 20px;
+    display: block;
+    border: 1px solid black;
+}
+
+#tablero span.ocupada{
+    background-color: #000;
+}
+#tablero span.nueva{
+    background-color: rgb(221, 102, 17);
+}
