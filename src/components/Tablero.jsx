@@ -1,23 +1,8 @@
-import React, { useEffect, useState, useRef } from "react"
+import React, { useEffect, useState, useRef, useMemo } from "react"
 import { Celda } from "./Celda"
 import { BotonIniciaJuego } from "./BotonIniciaJuego"
 
-const tableroInicial = [[0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        ]
+const tableroInicial = Array(15).fill().map((arr) => arr = Array(9).fill(0))
 const piezas = [
     {
         nombre: "PiezaCuadrado",
@@ -25,7 +10,7 @@ const piezas = [
     },
     {
         nombre: "PiezaPalo",
-        matriz: [[1], [1], [1]]
+        matriz: [[1], [1], [1], [1]]
     },
     {
         nombre: "PiezaL",
@@ -39,6 +24,13 @@ const piezas = [
         nombre: "PiezaZigzag",
         matriz: [[1, 1, 0], [0, 1, 1]]
     }
+]
+
+const piezaFin = [
+    [2, 2, 1, 2, 1, 2, 1, 1, 2],
+    [2, 1, 1, 2, 1, 2, 2, 1, 2],
+    [2, 2, 1, 2, 1, 2, 1, 2, 2],
+    [2, 1, 1, 2, 1, 2, 1, 1, 2],
 ]
 
 class Pieza {
@@ -71,25 +63,33 @@ const generarNuevaPieza = () => {
 const Tablero = () => {
     const [matriz, setMatriz] = useState(tableroInicial)
     const [piezaActual, setPiezaActual] = useState(false)
-    const piezaActualRef = useRef(piezaActual);
+    const finPartida = useRef(false)
+    const piezaActualRef = useRef(piezaActual)
 
     const avanzarPieza = (posicion) => {
-        let nuevaPieza = (Object.keys(piezaActualRef.current).length == 0) ? generarNuevaPieza() : {...piezaActualRef.current}
+        if((Object.keys(piezaActualRef.current).length == 0))
+            return generarNuevaPieza()
+        
+        let nuevaPieza = {...piezaActualRef.current}
         let maximo_filas = matriz.length
         let final_pieza = nuevaPieza.posicionY + nuevaPieza.tamanoY 
 
         switch(posicion){
             case 'derecha': 
                 nuevaPieza.posicionX++
+                if(colisionPiezas(nuevaPieza))
+                    nuevaPieza.posicionX--
                 break
             case 'izquierda': 
                 nuevaPieza.posicionX--
+                if(colisionPiezas(nuevaPieza))
+                    nuevaPieza.posicionX++
                 break
             case 'abajo': 
                 nuevaPieza.posicionY++
                 break
             default:
-                throw new Error(posicion+' no está definido como una posición válida de movimiento.');
+                throw new Error(posicion+' no está definido como una posición válida de movimiento.')
         }
         
 
@@ -97,6 +97,7 @@ const Tablero = () => {
         let fin_pieza = maximo_filas <= final_pieza || colisionPiezas(nuevaPieza)
         if(fin_pieza){
             acabarPieza()
+            comprobarFinPartida()
 
             return false
         }
@@ -130,6 +131,13 @@ const Tablero = () => {
         })
 
         setMatriz(nuevaMatriz)
+    }
+
+    const comprobarFinPartida = () => {
+        let hay_ficha_primera_fila = matriz[0].filter((valorCelda) => valorCelda == 1).length > 0
+        if(hay_ficha_primera_fila)
+            // setFinPartida(true)
+            finPartida.current = true
     }
     
     const comprobarFilasLlenas = (nuevaMatriz) => {
@@ -205,13 +213,13 @@ const Tablero = () => {
     const transponerMatriz = () => {
         let pieza = {...piezaActualRef.current}
         
-        const rotada = [];
+        const rotada = []
         for (let i = 0; i < pieza.tipoPieza.matriz[0].length; i++) {
-            const row = [];
+            const row = []
             for (let j = pieza.tipoPieza.matriz.length - 1; j >= 0; j--) {
-                row.push(pieza.tipoPieza.matriz[j][i]);
+                row.push(pieza.tipoPieza.matriz[j][i])
             }
-            rotada.push(row);
+            rotada.push(row)
         }
         // Actualizar la matriz
         pieza.tipoPieza.matriz = rotada
@@ -226,15 +234,70 @@ const Tablero = () => {
 
     }
 
+    const finalizarJuego = () => {
+        const intervalFinId = setInterval(() => {
+            let todasLasFilasNegras = matriz.filter(fila => { return fila.filter(celda => celda == 0).length > 0 }).length == 0
+            let nuevaMatriz = [...matriz]
+            if(todasLasFilasNegras){
+                // Acabar bucle
+                clearInterval(intervalFinId)
+
+                // Pintar FIN en la matriz
+                // Fila, columna
+                let inicio_fin = [Math.floor((matriz.length - piezaFin.length) / 2), Math.floor((matriz[0].length - piezaFin[0].length) / 2)]
+                nuevaMatriz = Array(matriz.length).fill().map((celda, index) => {
+                    if(index >= inicio_fin[0] && index < (inicio_fin[0] + piezaFin.length)){
+                        return Array(matriz[0].length).fill().map((celdaNueva, indexCeldaNueva) => {
+                            let filaPiezaFin = index - inicio_fin[0]
+                            return (indexCeldaNueva >= inicio_fin[1]) ? piezaFin[filaPiezaFin][indexCeldaNueva] : 1
+                        })
+                    }else{
+                        return Array(matriz[0].length).fill(1)
+                    }
+                })
+                console.log("FIIN")
+            }else{
+                let celda_pintada = false
+                nuevaMatriz.map((fila, indexFila) => {
+                    if(!celda_pintada && fila.filter(celda => {return celda == 0}).length > 0){
+                        for(let i=0; i<fila.length; i++){
+                            if(fila[i] == 0){
+                                // Pintamos una celda solo y salimos
+                                nuevaMatriz[indexFila][i] = 1
+                                celda_pintada = true
+                                break
+                            }
+                        }
+                    }
+                })
+            }
+
+            setMatriz(nuevaMatriz)
+        }, 20)
+    }
+
     useEffect(() => {
         const intervalId = setInterval(() => {
-            let nuevaPieza = avanzarPieza("abajo");
-            piezaActualRef.current = nuevaPieza;
-            pintarMatriz(nuevaPieza);
-        }, 500);
+            if(finPartida.current){
+                clearInterval(intervalId)
+                return
+            }
+
+            let nuevaPieza = avanzarPieza("abajo")
+            piezaActualRef.current = nuevaPieza
+            pintarMatriz(nuevaPieza)
+        }, 500)
         
-        return () => clearInterval(intervalId);
-    }, []);
+        return () => clearInterval(intervalId)
+    }, [])
+
+    useMemo(() => {
+
+        if(finPartida.current){
+            finalizarJuego()
+        }
+    }, [finPartida.current])
+    
     
 
     return (
