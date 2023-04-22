@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useMemo } from "react"
 import { Celda } from "./Celda"
-import { BotonIniciaJuego } from "./BotonIniciaJuego"
+import { Boton } from "./Boton"
 
 const tableroInicial = Array(15).fill().map((arr) => arr = Array(9).fill(0))
 const piezas = [
@@ -17,12 +17,20 @@ const piezas = [
         matriz: [[1, 0], [1, 0], [1, 1]]
     },
     {
+        nombre: "PiezaLInversa",
+        matriz: [[0, 1], [0, 1], [1, 1]]
+    },
+    {
         nombre: "PiezaT",
         matriz: [[0, 1, 0], [1, 1, 1]]
     },
     {
         nombre: "PiezaZigzag",
         matriz: [[1, 1, 0], [0, 1, 1]]
+    },
+    {
+        nombre: "PiezaZigzagINversa",
+        matriz: [[0, 1, 1], [1, 1, 0]]
     }
 ]
 
@@ -65,6 +73,7 @@ const Tablero = () => {
     const [piezaActual, setPiezaActual] = useState(false)
     const finPartida = useRef(false)
     const piezaActualRef = useRef(piezaActual)
+    const juegoPausado = useRef(false)
 
     const avanzarPieza = (posicion) => {
         if((Object.keys(piezaActualRef.current).length == 0))
@@ -195,6 +204,8 @@ const Tablero = () => {
     }
 
     const handleKeyDown = (ev) => {
+        if(juegoPausado.current) return
+
         let nuevaPieza = {...piezaActualRef.current}
         if(ev.keyCode == 37 && nuevaPieza.posicionX > 0){
             nuevaPieza = avanzarPieza("izquierda")
@@ -230,8 +241,8 @@ const Tablero = () => {
         return pieza
     }
 
-    const iniciarJuego = () => {
-
+    const pausarJuego = () => {
+        juegoPausado.current = !juegoPausado.current
     }
 
     const finalizarJuego = () => {
@@ -255,7 +266,6 @@ const Tablero = () => {
                         return Array(matriz[0].length).fill(1)
                     }
                 })
-                console.log("FIIN")
             }else{
                 let celda_pintada = false
                 nuevaMatriz.map((fila, indexFila) => {
@@ -282,6 +292,7 @@ const Tablero = () => {
                 clearInterval(intervalId)
                 return
             }
+            if(juegoPausado.current) return
 
             let nuevaPieza = avanzarPieza("abajo")
             piezaActualRef.current = nuevaPieza
@@ -302,21 +313,25 @@ const Tablero = () => {
 
     return (
         <div id="tablero" onKeyDown={handleKeyDown} tabIndex="0">
-            {matriz.map((fila, indexFila) => {
-                
-                return (
-                    <div className="fila" key={"Fila-"+indexFila}>
-                        {fila.map((celda, index) => {
-                            return (
-                                <Celda key={indexFila + "-" +index} valorCelda={celda} />
-                            )
-                        })}
-                    </div>
-                )
-            })}
-            <BotonIniciaJuego eventoClick={iniciarJuego}>
-                Iniciar Juego
-            </BotonIniciaJuego>
+            <div id="juego">
+                {matriz.map((fila, indexFila) => {
+                    
+                    return (
+                        <div className="fila" key={"Fila-"+indexFila}>
+                            {fila.map((celda, index) => {
+                                return (
+                                    <Celda key={indexFila + "-" +index} valorCelda={celda} />
+                                )
+                            })}
+                        </div>
+                    )
+                })}
+            </div>
+            <div id="extra-juego">
+                <Boton eventoClick={pausarJuego}>
+                    {juegoPausado.current !== false ? "Pausa" : "Continuar"}
+                </Boton>
+            </div>
         </div>
     )
 }

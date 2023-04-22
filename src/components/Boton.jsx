@@ -1,6 +1,6 @@
 import React from "react"
 
-const BotonIniciaJuego = ( props ) => {
+const Boton = ( props ) => {
 
     return (
         <button onClick={props.eventoClick}>
@@ -9,4 +9,4 @@ const BotonIniciaJuego = ( props ) => {
     )
 }
 
-export { BotonIniciaJuego }
+export { Boton }

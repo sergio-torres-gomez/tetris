@@ -1,18 +1,63 @@
-#tablero .fila{
+body{
+    width: 100vw;
+    height: 100vh;
+    background-color: #22222a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-image: url('/public/assets/tetris1.jpg'), radial-gradient(circle, rgba(32,45,62,1) 19%, rgba(0,0,0,1) 101%);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+#tablero{
+    background-color: #173887;
+    border-radius: 5px;
+    padding: 20px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+#juego .fila{
     display: flex;
     flex-direction: row;
     gap: 1px;
+    margin-bottom: 1px;
 }
-#tablero span{
+#juego span{
     width: 20px;
     height: 20px;
     display: block;
-    border: 1px solid black;
+    border-radius: 2px;
+    background-color: #FFFFFF60;
 }
 
-#tablero span.ocupada{
-    background-color: #000;
+#juego span.ocupada{
+    background-color: #0d78ff;
+    -webkit-box-shadow: inset 0px 0px 8px 1px #0b4083;
+    -moz-box-shadow: inset 0px 0px 8px 1px #0b4083;
+    box-shadow: inset 0px 0px 8px 1px #0b4083;
 }
-#tablero span.nueva{
-    background-color: rgb(221, 102, 17);
+#juego span.nueva{
+    background-color: #e49564;
+    -webkit-box-shadow: inset 0px 0px 8px 1px #9d3d03;
+    -moz-box-shadow: inset 0px 0px 8px 1px #9d3d03;
+    box-shadow: inset 0px 0px 8px 1px #9d3d03;
+}
+
+button{
+    padding: 5px 15px;
+    color: #FFF;
+    background-color: #3dadf6;
+    font-size: 21px;
+    border: 0;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.3s ease-out;
+}
+button:hover{
+    background-color: #5ab8f7;
+    transform: scale(1.05);
 }
