@@ -71,9 +71,9 @@ const generarNuevaPieza = () => {
 const Tablero = () => {
     const [matriz, setMatriz] = useState(tableroInicial)
     const [piezaActual, setPiezaActual] = useState(false)
+    const [juegoPausado, setJuegoPausado] = useState(false)
     const finPartida = useRef(false)
     const piezaActualRef = useRef(piezaActual)
-    const juegoPausado = useRef(false)
 
     const avanzarPieza = (posicion) => {
         if((Object.keys(piezaActualRef.current).length == 0))
@@ -187,7 +187,7 @@ const Tablero = () => {
                 contador_fila++
             }
         })
-        //console.log(nuevaMatriz)
+        console.log(nuevaMatriz)
         setMatriz(nuevaMatriz)
     }
 
@@ -204,7 +204,7 @@ const Tablero = () => {
     }
 
     const handleKeyDown = (ev) => {
-        if(juegoPausado.current) return
+        if(juegoPausado) return
 
         let nuevaPieza = {...piezaActualRef.current}
         if(ev.keyCode == 37 && nuevaPieza.posicionX > 0){
@@ -241,8 +241,13 @@ const Tablero = () => {
         return pieza
     }
 
-    const pausarJuego = () => {
-        juegoPausado.current = !juegoPausado.current
+    const pausarJuegoClick = () => {
+        setJuegoPausado(!juegoPausado)
+    }
+
+    const reiniciarPartidaClick = () => {
+        setJuegoPausado(false)
+        setMatriz(tableroInicial)
     }
 
     const finalizarJuego = () => {
@@ -286,13 +291,13 @@ const Tablero = () => {
         }, 20)
     }
 
-    useEffect(() => {
+    /*useEffect(() => {
         const intervalId = setInterval(() => {
             if(finPartida.current){
                 clearInterval(intervalId)
                 return
             }
-            if(juegoPausado.current) return
+            if(juegoPausado) return
 
             let nuevaPieza = avanzarPieza("abajo")
             piezaActualRef.current = nuevaPieza
@@ -300,7 +305,7 @@ const Tablero = () => {
         }, 500)
         
         return () => clearInterval(intervalId)
-    }, [])
+    }, [])*/
 
     useMemo(() => {
 
@@ -328,8 +333,12 @@ const Tablero = () => {
                 })}
             </div>
             <div id="extra-juego">
-                <Boton eventoClick={pausarJuego}>
-                    {juegoPausado.current !== false ? "Pausa" : "Continuar"}
+                <Boton eventoClick={pausarJuegoClick}>
+                    {juegoPausado !== false ? "Continuar" : "Pausa"}
+                </Boton>
+
+                <Boton className="reiniciarPartida" eventoClick={reiniciarPartidaClick}>
+                    Reiniciar
                 </Boton>
             </div>
         </div>

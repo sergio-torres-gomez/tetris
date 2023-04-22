@@ -48,6 +48,9 @@ body{
 }
 
 button{
+    width: 150px;
+    display: block;
+    margin: 5px 0;
     padding: 5px 15px;
     color: #FFF;
     background-color: #3dadf6;
@@ -60,4 +63,11 @@ button{
 button:hover{
     background-color: #5ab8f7;
     transform: scale(1.05);
+}
+
+button.reiniciarPartida{
+    background-color: #f63d3d;
+}
+button.reiniciarPartida:hover{
+    background-color: #ec5555;
 }
