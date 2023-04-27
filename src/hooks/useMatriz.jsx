@@ -1,21 +1,26 @@
-import { useRef, useState, useMemo } from 'react'
+import { useRef, useState, useMemo, useEffect } from 'react'
 import { piezaAleatoria, piezaFin } from "../models/pieza"
 
 const tableroInicial = Array(15).fill().map((arr) => arr = Array(9).fill(0))
 
 const useMatriz = () => {
+    const [partidaActual, setPartidaActual] = useState(tableroInicial)
     const [matriz, setMatriz] = useState(tableroInicial)
     const [piezaActual, setPiezaActual] = useState(false)
     const [juegoPausado, setJuegoPausado] = useState(false)
     const piezaActualRef = useRef(piezaActual)
     const finPartida = useRef(false)
 
+    useEffect(() => {
+        pintarPiezaEnJuego(piezaActual)
+        setMatriz(partidaActual)
+    }, [partidaActual, piezaActual])
+
     const generarNuevaPieza = () => {
         return piezaAleatoria()
     }
 
     const avanzarPieza = (posicion) => {
-        
         let nuevaPieza = {...piezaActualRef.current}
 
         switch(posicion){
@@ -65,7 +70,7 @@ const useMatriz = () => {
             })
         })
 
-        setMatriz(nuevaMatriz)
+        setPartidaActual(nuevaMatriz)
     }
 
     const comprobarFinPartida = () => {
@@ -114,8 +119,6 @@ const useMatriz = () => {
                 contador_fila++
             }
         })
-        
-        setMatriz(nuevaMatriz)
     }
 
     // Quita la pieza que se está jugando actualmente
