@@ -1,5 +1,5 @@
 import React from "react"
-import { Tablero } from "./Tablero"
+import Tablero from "./Tablero"
 
 const Tetris = () => {
     return (
