@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useMemo } from "react"
+import { memo } from "react"
 import { Celda } from "./Celda"
 import { Boton } from "./Boton"
 import { useMatriz } from "../hooks/useMatriz"
@@ -21,21 +21,14 @@ const Tablero = () => {
         
         return () => clearInterval(intervalId)
     }, [])*/
-    
+
 
     return (
         <div id="tablero" onKeyDown={handleKeyDown} tabIndex="0">
             <div id="juego">
                 {matriz.map((fila, indexFila) => {
-                    
                     return (
-                        <div className="fila" key={"Fila-"+indexFila}>
-                            {fila.map((celda, index) => {
-                                return (
-                                    <Celda key={indexFila + "-" +index} valorCelda={celda} />
-                                )
-                            })}
-                        </div>
+                        <Fila key={indexFila} fila={fila} indexFila={indexFila} />
                     )
                 })}
             </div>
@@ -52,4 +45,14 @@ const Tablero = () => {
     )
 }
 
-export { Tablero }
+const Fila = ({ fila, indexFila }) => {
+    return (
+        <div className="fila" key={"Fila-"+indexFila}>
+            {fila.map((celda, index) => <CeldaMemo key={indexFila + "-" +index} celda={celda} />)}
+        </div>
+    )
+}
+    
+const CeldaMemo = memo(({ celda }) => <Celda valorCelda={celda} />)
+
+export default memo(Tablero)

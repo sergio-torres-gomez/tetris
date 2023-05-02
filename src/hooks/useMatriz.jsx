@@ -1,27 +1,108 @@
 import { useRef, useState, useMemo, useEffect } from 'react'
 import { piezaAleatoria, piezaFin } from "../models/pieza"
+import { useInterval } from "./useInterval"
 
 const tableroInicial = Array(15).fill().map((arr) => arr = Array(9).fill(0))
 
 const useMatriz = () => {
-    const [partidaActual, setPartidaActual] = useState(tableroInicial)
+
     const [matriz, setMatriz] = useState(tableroInicial)
     const [piezaActual, setPiezaActual] = useState(false)
     const [juegoPausado, setJuegoPausado] = useState(false)
-    const piezaActualRef = useRef(piezaActual)
+    const partidaActual = useRef(tableroInicial)
     const finPartida = useRef(false)
 
-    useEffect(() => {
-        pintarPiezaEnJuego(piezaActual)
-        setMatriz(partidaActual)
-    }, [partidaActual, piezaActual])
+    // Pinta una pieza nueva pasada por parámetro
+    const pintarPiezaEnJuego = () => {
+        
+        if(!piezaActual || Object.keys(piezaActual) == 0) {
+            let nuevaMatriz = acabarPieza()
+            nuevaMatriz = comprobarFilasLlenas(nuevaMatriz)
+            comprobarFinPartida(nuevaMatriz)
+            nuevaMatriz = quitarPiezaActualEnJuego(nuevaMatriz)
+            
+            return nuevaMatriz
+        }
+        
+        /////// PINTANDO EN LA MATRIZ
+        let contador_fila = 0
+        let nuevaMatriz = comprobarFilasLlenas([...matriz])
+        nuevaMatriz = quitarPiezaActualEnJuego(nuevaMatriz)
+
+        nuevaMatriz.map((fila, num_fila) => {
+            // si estamos evaluando la matriz dentro del contenido vertical de la pieza
+            if(num_fila >= piezaActual.posicionY && num_fila < piezaActual.posicionY + piezaActual.tamanoY){
+                // ahora comprobar el horizontal
+                let contador_columna = 0
+                fila.map((celda, num_columna) => {
+                    // antes comprobamos si la celda está en blanco
+                    if(num_columna >= piezaActual.posicionX && num_columna < piezaActual.posicionX + piezaActual.tamanoX){
+                        if(celda == 0){
+                            let celda_ocupada = piezaActual.tipoPieza.matriz[contador_fila][contador_columna] == 1
+                            nuevaMatriz[num_fila][num_columna] = (celda_ocupada) ? 2 : 0
+                        }
+                        contador_columna++
+                    }
+                })
+                contador_fila++
+            }
+        })
+
+        return nuevaMatriz
+    }
+
+    const acabarPieza = () => {
+        let nuevaMatriz = [...matriz]
+        nuevaMatriz.map((fila, num_fila) => {
+            fila.map((celda, num_columna) => {
+                nuevaMatriz[num_fila][num_columna] = (celda != 0) ? 1 : 0
+            })
+        })
+
+        return nuevaMatriz
+    }
+
+    const comprobarFilasLlenas = (nuevaMatriz) => {
+        nuevaMatriz.map((fila, num_fila) => {
+            let completas = fila.filter(celda => celda == 1)
+            if(completas.length == nuevaMatriz[0].length){
+                nuevaMatriz = [...nuevaMatriz.slice(0, num_fila), ...nuevaMatriz.slice(num_fila + 1)]
+                nuevaMatriz.unshift(new Array(nuevaMatriz[0].length).fill(0))
+            }
+        })
+     
+        return nuevaMatriz
+    }
+
+    const comprobarFinPartida = (nuevaMatriz) => {
+        let hay_ficha_primera_fila = nuevaMatriz[0].filter((valorCelda) => valorCelda == 1).length > 0
+        if(hay_ficha_primera_fila)
+            finPartida.current = true
+    }
+
+    // Quita la pieza que se está jugando actualmente
+    const quitarPiezaActualEnJuego = (nuevaMatriz) => {
+        // Inicializar la matriz para eliminar el movimiento anterior
+        nuevaMatriz.map((fila, num_fila) => {
+            fila.map((celda, num_columna) => {
+                nuevaMatriz[num_fila][num_columna] = (nuevaMatriz[num_fila][num_columna] == 1) ? 1 : 0
+            })
+        })
+
+        return nuevaMatriz
+    }
+
 
     const generarNuevaPieza = () => {
         return piezaAleatoria()
     }
 
+    const avanzarPiezaAuto = () => {
+        return avanzarPieza("abajo")
+    }
+
     const avanzarPieza = (posicion) => {
-        let nuevaPieza = {...piezaActualRef.current}
+        let nuevaPieza = piezaActual ? {...piezaActual} : generarNuevaPieza()
 
         switch(posicion){
             case 'derecha': 
@@ -62,84 +143,12 @@ const useMatriz = () => {
         return colision
     }
 
-    const acabarPieza = () => {
-        let nuevaMatriz = [...matriz]
-        matriz.map((fila, num_fila) => {
-            fila.map((celda, num_columna) => {
-                nuevaMatriz[num_fila][num_columna] = (celda != 0) ? 1 : 0
-            })
-        })
-
-        setPartidaActual(nuevaMatriz)
-    }
-
-    const comprobarFinPartida = () => {
-        let hay_ficha_primera_fila = matriz[0].filter((valorCelda) => valorCelda == 1).length > 0
-        if(hay_ficha_primera_fila)
-            // setFinPartida(true)
-            finPartida.current = true
-    }
-    
-    const comprobarFilasLlenas = (nuevaMatriz) => {
-        nuevaMatriz.map((fila, num_fila) => {
-            let completas = fila.filter(celda => celda == 1)
-            if(completas.length == nuevaMatriz[0].length){
-                nuevaMatriz = [...nuevaMatriz.slice(0, num_fila), ...nuevaMatriz.slice(num_fila + 1)]
-                nuevaMatriz.unshift(new Array(nuevaMatriz[0].length).fill(0))
-            }
-        })
-     
-        return nuevaMatriz
-    }
-
-    // Pinta una pieza nueva pasada por parámetro
-    const pintarPiezaEnJuego = (nuevaPieza) => {
-        quitarPiezaActualEnJuego()
-        if(!nuevaPieza || Object.keys(nuevaPieza) == 0) return
-        
-        /////// PINTANDO EN LA MATRIZ
-        let contador_fila = 0
-        let nuevaMatriz = comprobarFilasLlenas([...matriz])
-        
-        nuevaMatriz.map((fila, num_fila) => {
-            // si estamos evaluando la matriz dentro del contenido vertical de la pieza
-            if(num_fila >= nuevaPieza.posicionY && num_fila < nuevaPieza.posicionY + nuevaPieza.tamanoY){
-                // ahora comprobar el horizontal
-                let contador_columna = 0
-                fila.map((celda, num_columna) => {
-                    // antes comprobamos si la celda está en blanco
-                    if(num_columna >= nuevaPieza.posicionX && num_columna < nuevaPieza.posicionX + nuevaPieza.tamanoX){
-                        if(celda == 0){
-                            let celda_ocupada = nuevaPieza.tipoPieza.matriz[contador_fila][contador_columna] == 1
-                            nuevaMatriz[num_fila][num_columna] = (celda_ocupada) ? 2 : 0
-                        }
-                        contador_columna++
-                    }
-                })
-                contador_fila++
-            }
-        })
-    }
-
-    // Quita la pieza que se está jugando actualmente
-    const quitarPiezaActualEnJuego = () => {
-        // Inicializar la matriz para eliminar el movimiento anterior
-        let nuevaMatriz = [...matriz]
-        nuevaMatriz.map((fila, num_fila) => {
-            fila.map((celda, num_columna) => {
-                nuevaMatriz[num_fila][num_columna] = (nuevaMatriz[num_fila][num_columna] == 1) ? 1 : 0
-            })
-        })
-
-        setMatriz(nuevaMatriz)
-    }
-
     const handleKeyDown = (ev) => {
         if(juegoPausado) return
 
-        let nuevaPieza = {...piezaActualRef.current}
+        let nuevaPieza = {...piezaActual}
         
-        if((Object.keys(piezaActualRef.current).length == 0)){
+        if((Object.keys(nuevaPieza).length == 0)){
             nuevaPieza = generarNuevaPieza()
         }else{
             if(ev.keyCode == 37 && nuevaPieza.posicionX > 0){
@@ -154,8 +163,7 @@ const useMatriz = () => {
             }
         }
         
-        piezaActualRef.current = nuevaPieza
-        pintarPiezaEnJuego(nuevaPieza)
+        setPiezaActual(nuevaPieza)
     }
 
     const comprobarMovimientoValido = (nuevaPieza) => {
@@ -163,19 +171,12 @@ const useMatriz = () => {
         let final_pieza = nuevaPieza.posicionY + nuevaPieza.tamanoY 
         // Si llega al final
         let fin_pieza = maximo_filas < final_pieza || colisionPiezas(nuevaPieza)
-        
-        if(fin_pieza){
-            acabarPieza()
-            comprobarFinPartida()
 
-            nuevaPieza = false
-        }
-
-        return nuevaPieza
+        return fin_pieza ? false : nuevaPieza
     }
 
     const transponerMatriz = () => {
-        let pieza = {...piezaActualRef.current}
+        let pieza = {...piezaActual}
         
         const rotada = []
         for (let i = 0; i < pieza.tipoPieza.matriz[0].length; i++) {
@@ -200,8 +201,8 @@ const useMatriz = () => {
 
     const reiniciarPartidaClick = () => {
         setJuegoPausado(false)
-        piezaActualRef.current = generarNuevaPieza()
-        setMatriz(tableroInicial)
+        //setPiezaActual(generarNuevaPieza())
+        partidaActual.current = tableroInicial
     }
 
     const finalizarJuego = () => {
@@ -218,7 +219,7 @@ const useMatriz = () => {
                 nuevaMatriz = rellenaSiguienteCelda(nuevaMatriz)
             }
 
-            setMatriz(nuevaMatriz)
+            partidaActual.current = nuevaMatriz
         }, 20)
 
         // Rellena la siguiente celda dada una matriz
@@ -260,11 +261,20 @@ const useMatriz = () => {
     }
 
     useMemo(() => {
-
         if(finPartida.current){
             finalizarJuego()
         }
     }, [finPartida.current])
+
+    useMemo(() => {
+        partidaActual.current = pintarPiezaEnJuego()
+    }, [piezaActual])
+
+    useEffect(() => {
+        setMatriz(partidaActual.current)
+    }, [partidaActual.current])
+
+    useInterval(() => setPiezaActual(avanzarPiezaAuto), 500)
 
     return { matriz, juegoPausado, handleKeyDown, pausarJuegoClick, reiniciarPartidaClick }
 }

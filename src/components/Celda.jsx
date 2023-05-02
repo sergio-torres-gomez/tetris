@@ -6,6 +6,7 @@ const Celda = (({valorCelda}) => {
         case 2: var clase = "nueva"; break
         default: var clase = ""; break
     }
+    
     return(
         <span className={clase}></span>
     )
