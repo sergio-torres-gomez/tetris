@@ -1,22 +1,16 @@
 import { useRef, useState, useMemo, useEffect } from 'react'
 import { piezaAleatoria, piezaFin } from "../models/pieza"
+import { useInterval } from "./useInterval"
 
 const tableroInicial = Array(15).fill().map((arr) => arr = Array(9).fill(0))
 
 const useMatriz = () => {
 
-    // TODO: Refactorizar, controlar renderizados innecesarios
-    
     const [matriz, setMatriz] = useState(tableroInicial)
-    const [partidaActual, setPartidaActual] = useState(tableroInicial)
     const [piezaActual, setPiezaActual] = useState(false)
     const [juegoPausado, setJuegoPausado] = useState(false)
+    const partidaActual = useRef(tableroInicial)
     const finPartida = useRef(false)
-
-    useEffect(() => {
-        console.log("ENTRA")
-        setMatriz(partidaActual)
-    }, [partidaActual])
 
     // Pinta una pieza nueva pasada por parámetro
     const pintarPiezaEnJuego = () => {
@@ -83,7 +77,6 @@ const useMatriz = () => {
     const comprobarFinPartida = (nuevaMatriz) => {
         let hay_ficha_primera_fila = nuevaMatriz[0].filter((valorCelda) => valorCelda == 1).length > 0
         if(hay_ficha_primera_fila)
-            // setFinPartida(true)
             finPartida.current = true
     }
 
@@ -99,17 +92,17 @@ const useMatriz = () => {
         return nuevaMatriz
     }
 
-    useMemo(() => {
-        console.log("pasa")
-        setPartidaActual(pintarPiezaEnJuego())
-    }, [piezaActual])
 
     const generarNuevaPieza = () => {
         return piezaAleatoria()
     }
 
+    const avanzarPiezaAuto = () => {
+        return avanzarPieza("abajo")
+    }
+
     const avanzarPieza = (posicion) => {
-        let nuevaPieza = {...piezaActual}
+        let nuevaPieza = piezaActual ? {...piezaActual} : generarNuevaPieza()
 
         switch(posicion){
             case 'derecha': 
@@ -208,8 +201,8 @@ const useMatriz = () => {
 
     const reiniciarPartidaClick = () => {
         setJuegoPausado(false)
-        setPiezaActual(generarNuevaPieza())
-        setPartidaActual(tableroInicial)
+        //setPiezaActual(generarNuevaPieza())
+        partidaActual.current = tableroInicial
     }
 
     const finalizarJuego = () => {
@@ -226,7 +219,7 @@ const useMatriz = () => {
                 nuevaMatriz = rellenaSiguienteCelda(nuevaMatriz)
             }
 
-            setPartidaActual(nuevaMatriz)
+            partidaActual.current = nuevaMatriz
         }, 20)
 
         // Rellena la siguiente celda dada una matriz
@@ -268,11 +261,20 @@ const useMatriz = () => {
     }
 
     useMemo(() => {
-
         if(finPartida.current){
             finalizarJuego()
         }
     }, [finPartida.current])
+
+    useMemo(() => {
+        partidaActual.current = pintarPiezaEnJuego()
+    }, [piezaActual])
+
+    useEffect(() => {
+        setMatriz(partidaActual.current)
+    }, [partidaActual.current])
+
+    useInterval(() => setPiezaActual(avanzarPiezaAuto), 500)
 
     return { matriz, juegoPausado, handleKeyDown, pausarJuegoClick, reiniciarPartidaClick }
 }

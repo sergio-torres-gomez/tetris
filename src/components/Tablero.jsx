@@ -21,14 +21,6 @@ const Tablero = () => {
         
         return () => clearInterval(intervalId)
     }, [])*/
-    
-    const FilaMemo = memo(({ fila, indexFila }) => {
-        return (
-            <div className="fila" key={"Fila-"+indexFila}>
-                {fila.map((celda, index) => <CeldaMemo key={indexFila + "-" +index} celda={celda} />)}
-            </div>
-        )})
-    const CeldaMemo = memo(({ celda }) => <Celda valorCelda={celda} />)
 
 
     return (
@@ -36,7 +28,7 @@ const Tablero = () => {
             <div id="juego">
                 {matriz.map((fila, indexFila) => {
                     return (
-                        <FilaMemo fila={fila} key={indexFila} />
+                        <Fila key={indexFila} fila={fila} indexFila={indexFila} />
                     )
                 })}
             </div>
@@ -52,5 +44,15 @@ const Tablero = () => {
         </div>
     )
 }
+
+const Fila = ({ fila, indexFila }) => {
+    return (
+        <div className="fila" key={"Fila-"+indexFila}>
+            {fila.map((celda, index) => <CeldaMemo key={indexFila + "-" +index} celda={celda} />)}
+        </div>
+    )
+}
+    
+const CeldaMemo = memo(({ celda }) => <Celda valorCelda={celda} />)
 
 export default memo(Tablero)
