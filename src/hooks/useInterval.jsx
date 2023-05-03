@@ -9,9 +9,10 @@ const useInterval = (fn, tiempo) => {
     }, [fn])
 
     useEffect(() => {
-        const interval = setInterval(() => fnRef.current(), tiempo)
-        return () => clearInterval(interval)
-
+        if(tiempo !== false){
+            const interval = setInterval(() => fnRef.current(), tiempo)
+            return () => clearInterval(interval)
+        }
     }, [tiempo])
 
 }

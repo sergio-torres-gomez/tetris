@@ -6,23 +6,6 @@ import { useMatriz } from "../hooks/useMatriz"
 const Tablero = () => {
     const { matriz, juegoPausado, handleKeyDown, pausarJuegoClick, reiniciarPartidaClick } = useMatriz()
 
-    /*useEffect(() => {
-        const intervalId = setInterval(() => {
-            if(finPartida.current){
-                clearInterval(intervalId)
-                return
-            }
-            if(juegoPausado) return
-
-            let nuevaPieza = avanzarPieza("abajo")
-            piezaActualRef.current = nuevaPieza
-            pintarPiezaEnJuego(nuevaPieza)
-        }, 500)
-        
-        return () => clearInterval(intervalId)
-    }, [])*/
-
-
     return (
         <div id="tablero" onKeyDown={handleKeyDown} tabIndex="0">
             <div id="juego">
