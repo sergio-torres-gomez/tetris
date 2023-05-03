@@ -11,6 +11,7 @@ const useMatriz = () => {
     const [juegoPausado, setJuegoPausado] = useState(false)
     const partidaActual = useRef(tableroInicial)
     const finPartida = useRef(false)
+    const relojPartida = useRef(500)
 
     // Pinta una pieza nueva pasada por parámetro
     const pintarPiezaEnJuego = () => {
@@ -144,7 +145,7 @@ const useMatriz = () => {
     }
 
     const handleKeyDown = (ev) => {
-        if(juegoPausado) return
+        if(juegoPausado || finPartida.current) return
 
         let nuevaPieza = {...piezaActual}
         
@@ -210,22 +211,9 @@ const useMatriz = () => {
     }
 
     const finalizarJuego = () => {
-        // Bucle para hacer un efecto de llenado celda a celda
-        const intervalFinId = setInterval(() => {
-            let todasLasFilasNegras = matriz.filter(fila => { return fila.filter(celda => celda == 0).length > 0 }).length == 0
-            let nuevaMatriz = [...matriz]
-            if(todasLasFilasNegras){
-                // Acabar bucle
-                clearInterval(intervalFinId)
-
-                nuevaMatriz = pintaFinTablero(nuevaMatriz)
-            }else{
-                nuevaMatriz = rellenaSiguienteCelda(nuevaMatriz)
-            }
-
-            partidaActual.current = nuevaMatriz
-        }, 20)
-
+        const tieneTodasCeldasOcupadas = (nuevaMatriz) => {
+            return nuevaMatriz.filter(fila => { return fila.filter(celda => celda == 0).length > 0 }).length == 0
+        }
         // Rellena la siguiente celda dada una matriz
         const rellenaSiguienteCelda = (nuevaMatriz) => {
             let celda_pintada = false
@@ -248,25 +236,34 @@ const useMatriz = () => {
         // Pinta "FIN" en medio de la matriz
         const pintaFinTablero = (nuevaMatriz) => {
             // Fila, columna
-            let inicio_fin = [Math.floor((matriz.length - piezaFin.length) / 2), Math.floor((matriz[0].length - piezaFin[0].length) / 2)]
-            nuevaMatriz = Array(matriz.length).fill().map((celda, index) => {
+            let inicio_fin = [Math.floor((nuevaMatriz.length - piezaFin.length) / 2), Math.floor((nuevaMatriz[0].length - piezaFin[0].length) / 2)]
+            nuevaMatriz = Array(nuevaMatriz.length).fill().map((celda, index) => {
                 if(index >= inicio_fin[0] && index < (inicio_fin[0] + piezaFin.length)){
-                    return Array(matriz[0].length).fill().map((celdaNueva, indexCeldaNueva) => {
+                    return Array(nuevaMatriz[0].length).fill().map((celdaNueva, indexCeldaNueva) => {
                         let filaPiezaFin = index - inicio_fin[0]
                         return (indexCeldaNueva >= inicio_fin[1]) ? piezaFin[filaPiezaFin][indexCeldaNueva] : 1
                     })
                 }else{
-                    return Array(matriz[0].length).fill(1)
+                    return Array(nuevaMatriz[0].length).fill(1)
                 }
             })
 
             return nuevaMatriz
         }
+
+
+        // Bucle para hacer un efecto de llenado celda a celda
+        if(tieneTodasCeldasOcupadas([...matriz])){
+            setMatriz(pintaFinTablero([...matriz]))
+            relojPartida.current = false
+        }else{
+            setMatriz(rellenaSiguienteCelda([...matriz]))
+        }
     }
 
     useMemo(() => {
         if(finPartida.current){
-            finalizarJuego()
+            relojPartida.current = 20
         }
     }, [finPartida.current])
 
@@ -278,7 +275,12 @@ const useMatriz = () => {
         setMatriz(partidaActual.current)
     }, [partidaActual.current])
 
-    useInterval(() => setPiezaActual(avanzarPiezaAuto), 500)
+    useInterval(() => {
+        if(finPartida.current){
+            return finalizarJuego()
+        }
+        return setPiezaActual(avanzarPiezaAuto)
+    }, relojPartida.current)
 
     return { matriz, juegoPausado, handleKeyDown, pausarJuegoClick, reiniciarPartidaClick }
 }
