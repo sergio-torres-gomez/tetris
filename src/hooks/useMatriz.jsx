@@ -191,6 +191,10 @@ const useMatriz = () => {
         // Actualizar los tamaños de la matriz
         pieza.tamanoY = rotada.length
         pieza.tamanoX = rotada[0].length
+
+        // Comprobar que la pieza no se haya salido de la pantalla
+        if(pieza.posicionX + pieza.tamanoX > matriz[0].length)
+            pieza.posicionX = matriz[0].length - pieza.tamanoX
         
         return pieza
     }
