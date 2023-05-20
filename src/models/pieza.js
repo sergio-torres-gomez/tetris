@@ -51,7 +51,6 @@ class Pieza {
         this.tamanoY = this.tipoPieza.matriz.length
         this.tamanoX = this.tipoPieza.matriz[0].length
         this.posicionY = 0
-        //this.posicionX = Math.round(tableroInicial[0].length / 2) - Math.round(this.tipoPieza.matriz[0].length / 2) 
         this.posicionX = 0
     }
 }

@@ -2,16 +2,18 @@ import { useRef, useState, useMemo, useEffect } from 'react'
 import { piezaAleatoria, piezaFin } from "../models/pieza"
 import { useInterval } from "./useInterval"
 
-const tableroInicial = Array(15).fill().map((arr) => arr = Array(9).fill(0))
+const tableroInicial = () => Array(15).fill().map((arr) => arr = Array(9).fill(0))
 
 const useMatriz = () => {
 
-    const [matriz, setMatriz] = useState(tableroInicial)
+    const _VELOCIDAD_RELOJ_ = 500
+    const [matriz, setMatriz] = useState(tableroInicial())
     const [piezaActual, setPiezaActual] = useState(false)
     const [juegoPausado, setJuegoPausado] = useState(false)
-    const partidaActual = useRef(tableroInicial)
+    const partidaActual = useRef(tableroInicial())
     const finPartida = useRef(false)
-    const relojPartida = useRef(500)
+    const relojPartida = useRef(_VELOCIDAD_RELOJ_)
+    const partidaNueva = useRef(true)
 
     // Pinta una pieza nueva pasada por parámetro
     const pintarPiezaEnJuego = () => {
@@ -27,16 +29,17 @@ const useMatriz = () => {
         
         /////// PINTANDO EN LA MATRIZ
         let contador_fila = 0
-        let nuevaMatriz = comprobarFilasLlenas([...matriz])
+        let matriz_actual = partidaNueva.current ? tableroInicial() : [...matriz]
+        let nuevaMatriz = comprobarFilasLlenas(matriz_actual)
         nuevaMatriz = quitarPiezaActualEnJuego(nuevaMatriz)
+        partidaNueva.current = false
 
         nuevaMatriz.map((fila, num_fila) => {
-            // si estamos evaluando la matriz dentro del contenido vertical de la pieza
+            // estamos evaluando la matriz dentro del contenido vertical de la pieza
             if(num_fila >= piezaActual.posicionY && num_fila < piezaActual.posicionY + piezaActual.tamanoY){
                 // ahora comprobar el horizontal
                 let contador_columna = 0
                 fila.map((celda, num_columna) => {
-                    // antes comprobamos si la celda está en blanco
                     if(num_columna >= piezaActual.posicionX && num_columna < piezaActual.posicionX + piezaActual.tamanoX){
                         if(celda == 0){
                             let celda_ocupada = piezaActual.tipoPieza.matriz[contador_fila][contador_columna] == 1
@@ -205,9 +208,9 @@ const useMatriz = () => {
     }
 
     const reiniciarPartidaClick = () => {
+        partidaNueva.current = true
         setJuegoPausado(false)
-        //setPiezaActual(generarNuevaPieza())
-        partidaActual.current = tableroInicial
+        setPiezaActual(generarNuevaPieza())
     }
 
     const finalizarJuego = () => {
@@ -266,6 +269,10 @@ const useMatriz = () => {
             relojPartida.current = 20
         }
     }, [finPartida.current])
+
+    useMemo(() => {
+        relojPartida.current = juegoPausado ? false : _VELOCIDAD_RELOJ_
+    }, [juegoPausado])
 
     useMemo(() => {
         partidaActual.current = pintarPiezaEnJuego()
