@@ -1,11 +1,12 @@
 import React from "react"
 
 const Celda = (({valorCelda}) => {
-    switch(valorCelda){
-        case 1: var clase = "ocupada"; break
-        case 2: var clase = "nueva"; break
-        default: var clase = ""; break
-    }
+    const TipoClase = {
+        1: 'ocupada',
+        2: 'nueva',
+      }
+
+    let clase = TipoClase[valorCelda] || ""
     
     return(
         <span className={clase}></span>
