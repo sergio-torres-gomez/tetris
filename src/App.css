@@ -102,7 +102,11 @@ button.reiniciarPartida:hover{
     max-width: 40%;
     filter: contrast(0.5);
 }
-
+@media(max-width: 678px){
+    body{
+        overflow: hidden;
+    }
+}
 @media(max-width: 500px){
     button{
         width: 120px;

@@ -10,7 +10,8 @@ const Tablero = () => {
     const deslizadorHandle = useSwipeable({
         onSwipedLeft: (ev) => handleSwipe(ev, "izquierda"),
         onSwipedRight: (ev) => handleSwipe(ev, "derecha"),
-        onSwipedUp:(ev) => handleSwipe(ev, "arriba")
+        onSwipedDown: (ev) => handleSwipe(ev, "abajo"),
+        onTap: (ev) => handleSwipe(ev, "arriba"),
     });
 
     return (
