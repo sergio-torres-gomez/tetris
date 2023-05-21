@@ -4,6 +4,13 @@ import { useInterval } from "./useInterval"
 
 const tableroInicial = () => Array(15).fill().map((arr) => arr = Array(9).fill(0))
 
+const controlesTeclado = {
+    37: "izquierda",
+    38: "arriba",
+    39: "derecha",
+    40: "abajo"
+}
+
 const useMatriz = () => {
 
     const _VELOCIDAD_RELOJ_ = 500
@@ -148,6 +155,17 @@ const useMatriz = () => {
     }
 
     const handleKeyDown = (ev) => {
+        let control = controlesTeclado[ev.keyCode] || false
+        if(control)
+            controlUsuario(control)
+    }
+
+    const handleSwipe = (ev, direccion) => {
+        console.log(direccion);
+        controlUsuario(direccion)
+    }
+
+    const controlUsuario = (direccion) => {
         if(juegoPausado || finPartida.current) return
 
         let nuevaPieza = {...piezaActual}
@@ -155,20 +173,20 @@ const useMatriz = () => {
         if((Object.keys(nuevaPieza).length == 0)){
             nuevaPieza = generarNuevaPieza()
         }else{
-            if(ev.keyCode == 37 && nuevaPieza.posicionX > 0){
+            if(direccion == "izquierda" && nuevaPieza.posicionX > 0){
                 nuevaPieza = avanzarPieza("izquierda")
-            }else if(ev.keyCode == 38){
+            }else if(direccion == "arriba"){
                 nuevaPieza = transponerMatriz()
                 nuevaPieza = comprobarMovimientoValido(nuevaPieza)
-            }else if(ev.keyCode == 39 && nuevaPieza.posicionX + nuevaPieza.tamanoX < matriz[0].length){
+            }else if(direccion == "derecha" && nuevaPieza.posicionX + nuevaPieza.tamanoX < matriz[0].length){
                 nuevaPieza = avanzarPieza("derecha")
-            }else if(ev.keyCode == 40){
+            }else if(direccion == "abajo"){
                 nuevaPieza = avanzarPieza("abajo")
             }
         }
         
         setPiezaActual(nuevaPieza)
-    }
+    } 
 
     const comprobarMovimientoValido = (nuevaPieza) => {
         let maximo_filas = matriz.length
@@ -289,7 +307,7 @@ const useMatriz = () => {
         return setPiezaActual(avanzarPiezaAuto)
     }, relojPartida.current)
 
-    return { matriz, juegoPausado, handleKeyDown, pausarJuegoClick, reiniciarPartidaClick }
+    return { matriz, juegoPausado, handleKeyDown, handleSwipe, pausarJuegoClick, reiniciarPartidaClick }
 }
 
 export { useMatriz }

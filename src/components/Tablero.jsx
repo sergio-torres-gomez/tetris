@@ -2,12 +2,19 @@ import { memo } from "react"
 import { Celda } from "./Celda"
 import { Boton } from "./Boton"
 import { useMatriz } from "../hooks/useMatriz"
+import { useSwipeable } from 'react-swipeable'
 
 const Tablero = () => {
-    const { matriz, juegoPausado, handleKeyDown, pausarJuegoClick, reiniciarPartidaClick } = useMatriz()
+    const { matriz, juegoPausado, handleKeyDown, handleSwipe, pausarJuegoClick, reiniciarPartidaClick } = useMatriz()
+
+    const deslizadorHandle = useSwipeable({
+        onSwipedLeft: (ev) => handleSwipe(ev, "izquierda"),
+        onSwipedRight: (ev) => handleSwipe(ev, "derecha"),
+        onSwipedUp:(ev) => handleSwipe(ev, "arriba")
+    });
 
     return (
-        <div id="tablero" onKeyDown={handleKeyDown} tabIndex="0">
+        <div id="tablero" onKeyDown={handleKeyDown} {...deslizadorHandle} tabIndex="0">
             <div id="juego">
                 {matriz.map((fila, indexFila) => {
                     return (
