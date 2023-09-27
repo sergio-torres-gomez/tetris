@@ -109,7 +109,7 @@ const useMatriz = () => {
     }
 
     const avanzarPiezaAuto = () => {
-        return avanzarPieza("abajo")
+        return controlUsuario("abajo")
     }
 
     const avanzarPieza = (posicion) => {
@@ -161,7 +161,6 @@ const useMatriz = () => {
     }
 
     const handleSwipe = (ev, direccion) => {
-        console.log(direccion);
         controlUsuario(direccion)
     }
 
@@ -227,6 +226,8 @@ const useMatriz = () => {
 
     const reiniciarPartidaClick = () => {
         partidaNueva.current = true
+        relojPartida.current = juegoPausado ? false : _VELOCIDAD_RELOJ_
+        finPartida.current = false
         setJuegoPausado(false)
         setPiezaActual(generarNuevaPieza())
     }
@@ -304,7 +305,7 @@ const useMatriz = () => {
         if(finPartida.current){
             return finalizarJuego()
         }
-        return setPiezaActual(avanzarPiezaAuto)
+        return avanzarPiezaAuto()
     }, relojPartida.current)
 
     return { matriz, juegoPausado, handleKeyDown, handleSwipe, pausarJuegoClick, reiniciarPartidaClick }
